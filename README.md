@@ -27,13 +27,14 @@ Maintiens pour monter, relâche pour descendre. Évite la roche, ramasse les pi�
 
 ## Structure
 
-Tout le jeu tient dans `index.html` : styles, rendu sur canvas, physique et sons.
+- `index.html` : tout le jeu (styles, rendu sur canvas, physique, sons) et le bandeau de consentement.
+- `og-image.png` : image de 1200 × 630 affichée quand le lien est partagé (WhatsApp, Messenger, réseaux sociaux).
 
 Pour jouer en local, ouvre simplement `index.html` dans un navigateur.
 
 ## Mesure d'audience
 
-La page charge un Google tag (`GTM-KGTH2DQP`) et envoie ces événements dans le `dataLayer` :
+Un bandeau demande l'accord du visiteur. Tant qu'il n'a pas accepté, tout est refusé par défaut (Consent Mode) et le script Google (`GTM-KGTH2DQP`) n'est pas chargé. Le lien « Gérer les cookies », en bas de page, permet de changer d'avis. Une fois l'accord donné, le jeu envoie ces événements dans le `dataLayer` :
 
 | Événement | Quand | Paramètres |
 | --- | --- | --- |

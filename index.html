@@ -9,12 +9,21 @@
 <meta property="og:title" content="Hélico">
 <meta property="og:description" content="Maintiens pour monter, relâche pour descendre. Évite la roche, ramasse les pièces.">
 <meta property="og:type" content="website">
+<meta property="og:site_name" content="Hélico">
+<meta property="og:locale" content="fr_FR">
+<meta property="og:url" content="https://troplife56-source.github.io/helico/">
+<meta property="og:image" content="https://troplife56-source.github.io/helico/og-image.png">
+<meta property="og:image:type" content="image/png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="L'hélicoptère orange d'Hélico dans une grotte, avec des pièces dorées">
+<meta name="twitter:card" content="summary_large_image">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%230b131c'/%3E%3Cellipse cx='15' cy='20' rx='8' ry='5' fill='%23ff7b2e'/%3E%3Crect x='3' y='17' width='9' height='2' fill='%23c4531b'/%3E%3Crect x='14' y='11' width='2' height='5' fill='%23c4531b'/%3E%3Crect x='5' y='9' width='22' height='2' rx='1' fill='%23e8eef5'/%3E%3C/svg%3E">
-<!-- Google tag -->
-<script async src="https://www.googletagmanager.com/gtm.js?id=GTM-KGTH2DQP"></script>
+<!-- Google tag : tout est refusé par défaut, le script GTM-KGTH2DQP n'est chargé qu'après accord (voir le bandeau en bas de page) -->
 <script>
   window.dataLayer = window.dataLayer || [];
   function gtag(){dataLayer.push(arguments);}
+  gtag('consent', 'default', { ad_storage: 'denied', ad_user_data: 'denied', ad_personalization: 'denied', analytics_storage: 'denied' });
   gtag('js', new Date());
 </script>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700&family=IBM+Plex+Mono:wght@400;500&display=swap">
@@ -186,6 +195,31 @@ kbd {
 .sw-coin { background: var(--gold); box-shadow: inset 0 0 0 2px var(--gold-deep); }
 .sw-shield { border: 2.5px solid var(--shield); }
 .sw-rock { border-radius: 2px; background: var(--rock); border: 1.5px solid var(--rock-edge); }
+
+.consent {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 20;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 12px 24px;
+  background: var(--panel);
+  border-top: 1px solid var(--line);
+  padding-top: 12px;
+  padding-bottom: calc(12px + env(safe-area-inset-bottom, 0px));
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+}
+.consent p { margin: 0; max-width: 62ch; color: var(--fg); font-size: 12px; }
+.consent-btns { display: flex; gap: 8px; }
+.foot { margin: 0; }
+.linkbtn { font: inherit; font-size: 12px; color: var(--muted); background: none; border: 0; padding: 0; cursor: pointer; text-decoration: underline; }
+.linkbtn:hover { color: var(--fg); }
+.linkbtn:focus-visible { outline: 2px solid var(--heli); outline-offset: 2px; }
 </style>
 </head>
 <body>
@@ -234,8 +268,17 @@ kbd {
     <span><i class="sw sw-rock"></i> Roche : à éviter</span>
     <span>Nouvelle zone tous les 500 m</span>
   </div>
+  <p class="foot"><button type="button" class="linkbtn" id="consent-open">Gérer les cookies</button></p>
 </main>
 <noscript><p style="padding:16px;color:#e8eef5">Ce jeu a besoin de JavaScript pour fonctionner.</p></noscript>
+<div class="consent" id="consent" role="dialog" aria-label="Cookies et mesure d'audience" hidden>
+  <p>Hélico mesure son audience avec Google Tag Manager (nombre de parties, scores, zones atteintes) et dépose pour cela des cookies. Rien n'est envoyé sans ton accord, et tu peux changer d'avis à tout moment avec « Gérer les cookies ».</p>
+  <div class="consent-btns">
+    <button class="btn" id="consent-no" type="button">Refuser</button>
+    <button class="btn" id="consent-yes" type="button">Accepter</button>
+  </div>
+</div>
+
 
 <script>
 (() => {
@@ -264,6 +307,7 @@ const rand = (a, b) => a + Math.random() * (b - a);
 const fmt = n => n.toLocaleString('fr-FR');
 // Custom events for the Google tag (dataLayer). Safe if the tag is blocked.
 const track = (event, params) => {
+  if (!window.helicoAnalytics) return; // only after the visitor accepted
   try { (window.dataLayer = window.dataLayer || []).push(Object.assign({ event }, params)); } catch (e) {}
 };
 
@@ -898,6 +942,58 @@ vBest.textContent = fmt(best);
 renderSoundBtn();
 showOverlay('ready');
 requestAnimationFrame(frame);
+})();
+</script>
+<script>
+(() => {
+  const KEY = 'helico.consent', TAG = 'GTM-KGTH2DQP';
+  const bar = document.getElementById('consent');
+  const read = () => { try { return localStorage.getItem(KEY); } catch (e) { return null; } };
+  const write = v => { try { localStorage.setItem(KEY, v); } catch (e) {} };
+  let loaded = false;
+
+  // The Google tag is loaded only after the visitor accepts.
+  function loadTag() {
+    window.helicoAnalytics = true;
+    gtag('consent', 'update', { analytics_storage: 'granted' });
+    if (loaded) return;
+    loaded = true;
+    window.dataLayer.push({ 'gtm.start': Date.now(), event: 'gtm.js' });
+    const s = document.createElement('script');
+    s.async = true;
+    s.src = 'https://www.googletagmanager.com/gtm.js?id=' + TAG;
+    document.head.appendChild(s);
+  }
+  function clearCookies() {
+    const host = location.hostname;
+    document.cookie.split(';').forEach(c => {
+      const name = c.split('=')[0].trim();
+      if (/^_ga|^_gid|^_gat/.test(name)) {
+        ['', '; domain=' + host, '; domain=.' + host].forEach(d => {
+          document.cookie = name + '=; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=/' + d;
+        });
+      }
+    });
+  }
+  function choose(v) {
+    write(v);
+    bar.hidden = true;
+    if (v === 'granted') { loadTag(); return; }
+    window.helicoAnalytics = false;
+    gtag('consent', 'update', { analytics_storage: 'denied' });
+    clearCookies();
+  }
+
+  document.getElementById('consent-yes').addEventListener('click', () => choose('granted'));
+  document.getElementById('consent-no').addEventListener('click', () => choose('denied'));
+  document.getElementById('consent-open').addEventListener('click', () => {
+    bar.hidden = false;
+    document.getElementById('consent-yes').focus();
+  });
+
+  const saved = read();
+  if (saved === 'granted') loadTag();
+  else if (saved !== 'denied') bar.hidden = false;
 })();
 </script>
 </body>
